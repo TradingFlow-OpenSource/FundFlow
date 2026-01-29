@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlowFund - Degen AI Strategies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Fredoka:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Chakra Petch"', "sans-serif"], // More tech/gamey font
+              mono: ['"JetBrains Mono"', "monospace"],
+              display: ['"Fredoka"', "sans-serif"], // Rounder, friendlier for headers
+            },
+            colors: {
+              primary: "#06b6d4",
+              "primary-hover": "#0891b2",
+              secondary: "#8b5cf6",
+              "background-light": "#f8fafc",
+              "background-dark": "#02040a",
+              "surface-dark": "#0c0e16",
+              "card-dark": "#111111",
+              "border-dark": "#1e293b",
+              success: "#00FF94",
+              danger: "#FF2E63",
+              background: {
+                dark: "#030305",
+              },
+              cyber: {
+                neon: "#00f3ff",
+                purple: "#bc13fe",
+                pink: "#ff00ff",
+                yellow: "#FACC15",
+                panel: "rgba(255, 255, 255, 0.05)",
+              },
+            },
+            boxShadow: {
+              "hard-cyan": "4px 4px 0px 0px #06b6d4",
+              "hard-purple": "4px 4px 0px 0px #bc13fe",
+              "hard-yellow": "4px 4px 0px 0px #FACC15",
+              "hard-white": "4px 4px 0px 0px #ffffff",
+            },
+            animation: {
+              "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "spin-slow": "spin 12s linear infinite",
+              "bounce-gentle": "bounce 3s infinite",
+              marquee: "marquee 20s linear infinite",
+              shake: "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
+            },
+            keyframes: {
+              marquee: {
+                "0%": { transform: "translateX(0%)" },
+                "100%": { transform: "translateX(-100%)" },
+              },
+              shake: {
+                "10%, 90%": { transform: "translate3d(-1px, 0, 0)" },
+                "20%, 80%": { transform: "translate3d(2px, 0, 0)" },
+                "30%, 50%, 70%": { transform: "translate3d(-4px, 0, 0)" },
+                "40%, 60%": { transform: "translate3d(4px, 0, 0)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #030305;
+        color: #e2e8f0;
+        overflow-x: hidden;
+        /* Noise texture for that retro feel */
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      }
+
+      /* Brutalist Card Base */
+      .brutal-card {
+        background-color: #111111;
+        border: 2px solid #333;
+        border-radius: 12px;
+        transition: all 0.1s ease-in-out;
+      }
+
+      .brutal-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0px 0px #06b6d4;
+        border-color: #06b6d4;
+      }
+
+      .brutal-btn {
+        border: 2px solid #000;
+        box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+        transition: all 0.1s;
+      }
+      .brutal-btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.5);
+      }
+
+      .text-outline {
+        text-shadow:
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000,
+          1px 1px 0 #000;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+          "react/": "https://esm.sh/react@^19.2.4/",
+          "react": "https://esm.sh/react@^19.2.4",
+          "recharts": "https://esm.sh/recharts@^3.7.0",
+          "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
