@@ -1,6 +1,7 @@
-import React from 'react';
-import { ViewState } from '../types';
-import { LayoutGrid, Rocket, Zap } from 'lucide-react';
+import React from "react";
+import { ViewState } from "../types";
+import { LayoutGrid, Rocket } from "lucide-react";
+import { ConnectButton } from "./ConnectButton";
 
 interface NavbarProps {
   currentView: ViewState;
@@ -12,26 +13,48 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
     <nav className="fixed w-full z-50 bg-[#030305]/90 border-b border-white/10 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          
           {/* Logo Section */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onNavigate('home')}>
-            
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => onNavigate("home")}
+          >
             {/* Custom Logo Icon: The "Flow Node F" */}
             <div className="relative">
               {/* Background Shadow Layer */}
               <div className="absolute inset-0 bg-white translate-x-1 translate-y-1 border-2 border-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-              
+
               {/* Main Logo Box */}
               <div className="w-10 h-10 bg-primary flex items-center justify-center border-2 border-transparent group-hover:border-black relative z-10 transition-all transform group-hover:-translate-y-0.5 shadow-[0_0_15px_rgba(6,182,212,0.5)] group-hover:shadow-none">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-black"
+                >
                   {/* Vertical Spine */}
-                  <rect x="4" y="4" width="4" height="16" fill="currentColor"/>
+                  <rect x="4" y="4" width="4" height="16" fill="currentColor" />
                   {/* Top Bar with Terminal Node */}
-                  <rect x="8" y="4" width="8" height="4" fill="currentColor"/>
-                  <rect x="18" y="4" width="4" height="4" fill="currentColor" className="group-hover:translate-x-0.5 transition-transform duration-300"/>
+                  <rect x="8" y="4" width="8" height="4" fill="currentColor" />
+                  <rect
+                    x="18"
+                    y="4"
+                    width="4"
+                    height="4"
+                    fill="currentColor"
+                    className="group-hover:translate-x-0.5 transition-transform duration-300"
+                  />
                   {/* Middle Bar with Terminal Node */}
-                  <rect x="8" y="12" width="4" height="4" fill="currentColor"/>
-                  <rect x="14" y="12" width="4" height="4" fill="currentColor" className="group-hover:translate-x-0.5 transition-transform duration-300 delay-75"/>
+                  <rect x="8" y="12" width="4" height="4" fill="currentColor" />
+                  <rect
+                    x="14"
+                    y="12"
+                    width="4"
+                    height="4"
+                    fill="currentColor"
+                    className="group-hover:translate-x-0.5 transition-transform duration-300 delay-75"
+                  />
                 </svg>
               </div>
             </div>
@@ -48,39 +71,38 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
 
           {/* Nav Links - Cleaner Tech Style */}
           <div className="hidden md:flex items-center gap-8">
-            <button 
-                onClick={() => onNavigate('list')}
-                className={`
+            <button
+              onClick={() => onNavigate("list")}
+              className={`
                   flex items-center gap-2 font-mono font-bold text-sm tracking-wider transition-all duration-300 relative group
-                  ${currentView === 'list' ? 'text-primary' : 'text-gray-400 hover:text-white'}
+                  ${currentView === "list" ? "text-primary" : "text-gray-400 hover:text-white"}
                 `}
-              >
-                <LayoutGrid size={18} />
-                <span>EXPLORE</span>
-                {/* Neon Active/Hover Indicator */}
-                <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${currentView === 'list' ? 'w-full shadow-[0_0_8px_#06b6d4]' : 'w-0 group-hover:w-full'}`}></span>
+            >
+              <LayoutGrid size={18} />
+              <span>EXPLORE</span>
+              {/* Neon Active/Hover Indicator */}
+              <span
+                className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${currentView === "list" ? "w-full shadow-[0_0_8px_#06b6d4]" : "w-0 group-hover:w-full"}`}
+              ></span>
             </button>
 
-            <button 
-                onClick={() => onNavigate('upload')}
-                className={`
+            <button
+              onClick={() => onNavigate("upload")}
+              className={`
                   flex items-center gap-2 font-mono font-bold text-sm tracking-wider transition-all duration-300 relative group
-                  ${currentView === 'upload' ? 'text-primary' : 'text-gray-400 hover:text-white'}
+                  ${currentView === "upload" ? "text-primary" : "text-gray-400 hover:text-white"}
                 `}
-              >
-                <Rocket size={18} />
-                <span>LAUNCH</span>
-                <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${currentView === 'upload' ? 'w-full shadow-[0_0_8px_#06b6d4]' : 'w-0 group-hover:w-full'}`}></span>
+            >
+              <Rocket size={18} />
+              <span>LAUNCH</span>
+              <span
+                className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${currentView === "upload" ? "w-full shadow-[0_0_8px_#06b6d4]" : "w-0 group-hover:w-full"}`}
+              ></span>
             </button>
           </div>
 
-          {/* Connect Button - Retain Chunky Brutalist for CTA */}
-          <div>
-            <button className="brutal-btn bg-primary hover:bg-white text-black px-6 py-2.5 font-bold font-mono text-sm uppercase border-2 border-black shadow-[4px_4px_0px_#bc13fe] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2">
-              <Zap size={18} fill="currentColor" />
-              Connect Wallet
-            </button>
-          </div>
+          {/* Connect Button */}
+          <ConnectButton />
         </div>
       </div>
     </nav>

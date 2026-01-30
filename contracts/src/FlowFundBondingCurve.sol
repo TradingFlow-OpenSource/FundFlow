@@ -18,14 +18,14 @@ contract FlowFundBondingCurve {
     // 
     // 定价公式: Price = BASE_PRICE + K * (Supply / SCALE)²
     //
-    // 示例价格变化 (假设 K = 0.0001 ETH):
+    // 示例价格变化 (K = 0.000001 ETH):
     //   Supply = 0      → Price = 0.0001 ETH (起始价)
-    //   Supply = 100    → Price = 0.0002 ETH 
-    //   Supply = 1000   → Price = 0.0101 ETH (涨了100倍!)
-    //   Supply = 5000   → Price = 0.2501 ETH (涨了2500倍!)
+    //   Supply = 10     → Price = 0.0002 ETH (翻倍!)
+    //   Supply = 30     → Price = 0.001 ETH (涨10倍!)
+    //   Supply = 100    → Price = 0.0101 ETH (涨100倍!)
     //
     uint256 public constant BASE_PRICE = 0.0001 ether;    // 起始价格: 0.0001 ETH
-    uint256 public constant K = 0.0000000001 ether;       // 二次方系数 (调小一点避免涨太快)
+    uint256 public constant K = 0.000001 ether;           // 二次方系数 (调大让价格变化更明显!)
     uint256 public constant SCALE = 1e18;                 // Token decimals
     
     // 手续费
