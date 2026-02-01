@@ -196,7 +196,7 @@ BSC_TESTNET_RPC=https://data-seed-prebsc-1-s1.binance.org:8545/
 
 ### Live Demo
 
-🔗 **[Coming Soon]** — Deployed demo link
+🔗 **[https://fundflow-lime.vercel.app](https://fundflow-lime.vercel.app)** — Try it now!
 
 ### Demo Video
 
