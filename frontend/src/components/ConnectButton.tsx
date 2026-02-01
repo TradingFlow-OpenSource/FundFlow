@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
+import { useAccount, useDisconnect, useSwitchChain } from 'wagmi';
 import { bscTestnet } from 'wagmi/chains';
 import { Zap, LogOut, ChevronDown, X } from 'lucide-react';
 
@@ -16,7 +16,12 @@ const BSC_TESTNET_PARAMS = {
   blockExplorerUrls: ['https://testnet.bscscan.com'],
 };
 
-// Wallet configurations
+// Debug helper - logs to console with prefix
+const debug = (msg: string, data?: any) => {
+  console.log(`[FundFlow Wallet] ${msg}`, data || '');
+};
+
+// Wallet configurations with explicit provider detection
 const WALLETS = [
   {
     id: 'metamask',
@@ -25,10 +30,29 @@ const WALLETS = [
     getProvider: () => {
       if (typeof window === 'undefined') return null;
       const ethereum = (window as any).ethereum;
+      
+      debug('Checking MetaMask...', {
+        hasEthereum: !!ethereum,
+        isMetaMask: ethereum?.isMetaMask,
+        isOKExWallet: ethereum?.isOKExWallet,
+        hasProviders: !!ethereum?.providers,
+        providersCount: ethereum?.providers?.length,
+      });
+      
+      // If multiple providers exist, find MetaMask specifically
       if (ethereum?.providers) {
-        return ethereum.providers.find((p: any) => p.isMetaMask && !p.isOKExWallet);
+        const mm = ethereum.providers.find((p: any) => p.isMetaMask && !p.isOKExWallet);
+        debug('Found MetaMask in providers array:', !!mm);
+        return mm || null;
       }
-      return ethereum?.isMetaMask ? ethereum : null;
+      
+      // Single provider - check if it's MetaMask (and not OKX pretending)
+      if (ethereum?.isMetaMask && !ethereum?.isOKExWallet) {
+        debug('Found MetaMask as single provider');
+        return ethereum;
+      }
+      
+      return null;
     },
   },
   {
@@ -37,68 +61,107 @@ const WALLETS = [
     icon: '/okx.png',
     getProvider: () => {
       if (typeof window === 'undefined') return null;
-      // OKX injects as window.okxwallet
-      return (window as any).okxwallet || null;
+      
+      const okxwallet = (window as any).okxwallet;
+      debug('Checking OKX Wallet...', {
+        hasOkxwallet: !!okxwallet,
+        isOKExWallet: okxwallet?.isOKExWallet,
+      });
+      
+      if (okxwallet) {
+        debug('Found OKX Wallet at window.okxwallet');
+        return okxwallet;
+      }
+      
+      return null;
     },
   },
 ];
 
 // Helper to add/switch network on a specific provider
-async function addAndSwitchNetwork(provider: any) {
+async function addAndSwitchNetwork(provider: any, walletName: string) {
+  debug(`Adding/switching network on ${walletName}...`);
   try {
     await provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: BSC_TESTNET_PARAMS.chainId }],
     });
+    debug(`Network switched successfully on ${walletName}`);
   } catch (switchError: any) {
+    debug(`Switch error on ${walletName}:`, switchError);
     if (switchError.code === 4902 || switchError.code === -32603) {
+      debug(`Adding BSC Testnet to ${walletName}...`);
       await provider.request({
         method: 'wallet_addEthereumChain',
         params: [BSC_TESTNET_PARAMS],
       });
+      debug(`Network added to ${walletName}`);
     } else {
       throw switchError;
     }
   }
 }
 
-// Direct connect using provider's eth_requestAccounts
-async function connectWithProvider(provider: any): Promise<string[]> {
-  const accounts = await provider.request({
-    method: 'eth_requestAccounts',
-  });
-  return accounts;
+// Store the active provider globally so other components can use it
+let activeProvider: any = null;
+let activeWalletId: string | null = null;
+
+export function getActiveProvider() {
+  return activeProvider;
+}
+
+export function getActiveWalletId() {
+  return activeWalletId;
 }
 
 export const ConnectButton: React.FC = () => {
-  const { address, isConnected, chain } = useAccount();
-  const { connectors, connect } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { address: wagmiAddress, isConnected: wagmiConnected, chain } = useAccount();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
+  
   const [showMenu, setShowMenu] = useState(false);
   const [connectingWallet, setConnectingWallet] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  
+  // Manual connection state (independent of wagmi)
   const [manualAddress, setManualAddress] = useState<string | null>(null);
+  const [manualConnected, setManualConnected] = useState(false);
+  const [connectedWalletId, setConnectedWalletId] = useState<string | null>(null);
 
-  // Sync manual connection with wagmi
+  // Log initial state
   useEffect(() => {
-    if (isConnected) {
-      setConnectingWallet(null);
-      setShowMenu(false);
-      setConnectionError(null);
-      setManualAddress(null);
-    }
-  }, [isConnected]);
+    debug('Component mounted. Checking wallet availability...');
+    debug('window.ethereum:', typeof window !== 'undefined' ? (window as any).ethereum : 'N/A');
+    debug('window.okxwallet:', typeof window !== 'undefined' ? (window as any).okxwallet : 'N/A');
+    
+    // Check all wallets
+    WALLETS.forEach(w => {
+      const provider = w.getProvider();
+      debug(`${w.name} available:`, !!provider);
+    });
+  }, []);
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
   const handleConnect = async (walletId: string) => {
+    debug(`User clicked connect for: ${walletId}`);
+    
     const wallet = WALLETS.find(w => w.id === walletId);
-    if (!wallet) return;
+    if (!wallet) {
+      debug('Wallet config not found!');
+      return;
+    }
 
     const provider = wallet.getProvider();
+    debug(`Got provider for ${wallet.name}:`, {
+      hasProvider: !!provider,
+      providerType: typeof provider,
+      isMetaMask: provider?.isMetaMask,
+      isOKExWallet: provider?.isOKExWallet,
+    });
+    
     if (!provider) {
       alert(`${wallet.name} is not installed. Please install it first.`);
       return;
@@ -109,56 +172,71 @@ export const ConnectButton: React.FC = () => {
     setConnectionError(null);
 
     try {
-      // Step 1: Add/switch network on the specific wallet
-      await addAndSwitchNetwork(provider);
+      // Step 1: Add/switch network
+      await addAndSwitchNetwork(provider, wallet.name);
 
-      // Step 2: Request accounts directly from the wallet's provider
-      const accounts = await connectWithProvider(provider);
+      // Step 2: Request accounts directly from this specific provider
+      debug(`Requesting accounts from ${wallet.name}...`);
+      const accounts = await provider.request({
+        method: 'eth_requestAccounts',
+      });
+      debug(`Got accounts from ${wallet.name}:`, accounts);
       
       if (accounts && accounts.length > 0) {
-        // Step 3: Now use wagmi to sync state
-        // Temporarily override window.ethereum to point to selected wallet
-        const originalEthereum = (window as any).ethereum;
-        (window as any).ethereum = provider;
+        // Store the active provider and wallet
+        activeProvider = provider;
+        activeWalletId = walletId;
         
-        // Find injected connector and connect
-        const injectedConnector = connectors.find(c => c.id === 'injected' || c.type === 'injected');
-        if (injectedConnector) {
-          connect({ connector: injectedConnector });
-        }
-        
-        // Store address in case wagmi doesn't sync immediately
+        // Update state
         setManualAddress(accounts[0]);
+        setManualConnected(true);
+        setConnectedWalletId(walletId);
+        setConnectingWallet(null);
         
-        // Restore original ethereum (wagmi should have captured the connection)
-        setTimeout(() => {
-          (window as any).ethereum = originalEthereum;
-        }, 1000);
+        debug(`Successfully connected to ${wallet.name} with address: ${accounts[0]}`);
       }
     } catch (err: any) {
-      console.error('Connection error:', err);
+      debug(`Connection error for ${wallet.name}:`, err);
       setConnectingWallet(null);
       setConnectionError(err.message || 'Failed to connect');
+      activeProvider = null;
+      activeWalletId = null;
     }
   };
 
   const handleCancel = () => {
     setConnectingWallet(null);
     setConnectionError(null);
-    setManualAddress(null);
   };
 
   const handleDisconnect = () => {
-    disconnect();
+    debug('Disconnecting...');
+    wagmiDisconnect();
     setManualAddress(null);
+    setManualConnected(false);
+    setConnectedWalletId(null);
+    activeProvider = null;
+    activeWalletId = null;
   };
 
+  // Use manual connection state primarily
+  const displayAddress = manualAddress || wagmiAddress;
+  const isDisplayConnected = manualConnected || wagmiConnected;
+  
   // Check if on wrong network
-  const isWrongNetwork = isConnected && chain?.id !== bscTestnet.id;
+  const isWrongNetwork = isDisplayConnected && chain?.id !== bscTestnet.id;
 
   // Handle network switch
-  const handleSwitchNetwork = () => {
-    switchChain({ chainId: bscTestnet.id });
+  const handleSwitchNetwork = async () => {
+    if (activeProvider) {
+      try {
+        await addAndSwitchNetwork(activeProvider, connectedWalletId || 'wallet');
+      } catch (err) {
+        debug('Failed to switch network:', err);
+      }
+    } else {
+      switchChain({ chainId: bscTestnet.id });
+    }
   };
 
   // Get installed wallets
@@ -168,10 +246,6 @@ export const ConnectButton: React.FC = () => {
       installed: wallet.getProvider() !== null,
     }));
   };
-
-  // Display address (from wagmi or manual)
-  const displayAddress = address || manualAddress;
-  const isDisplayConnected = isConnected || !!manualAddress;
 
   // Wrong network warning
   if (isDisplayConnected && isWrongNetwork) {
@@ -194,9 +268,13 @@ export const ConnectButton: React.FC = () => {
   }
 
   if (isDisplayConnected && displayAddress) {
+    const connectedWallet = WALLETS.find(w => w.id === connectedWalletId);
     return (
       <div className="flex items-center gap-2">
         <div className="brutal-btn bg-white text-black px-4 py-2 font-bold font-mono text-sm border-2 border-black shadow-[3px_3px_0px_#000] flex items-center gap-2">
+          {connectedWallet && (
+            <img src={connectedWallet.icon} alt={connectedWallet.name} className="w-4 h-4" />
+          )}
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span>{formatAddress(displayAddress)}</span>
         </div>
