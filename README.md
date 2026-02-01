@@ -1,4 +1,4 @@
-# FlowFund 🚀
+# FundFlow 🚀
 
 > **AI-Powered Trading Strategies on a Bonding Curve** — Built at ETH Chiang Mai 2026
 
@@ -7,7 +7,7 @@
 
 ## Introduction
 
-**FlowFund** is a decentralized platform that tokenizes AI trading strategies using a **Pump.fun-style bonding curve**. Users can:
+**FundFlow** is a decentralized platform that tokenizes AI trading strategies using a **Pump.fun-style bonding curve**. Users can:
 
 1. **Upload** their AI trading logic (`.tradingflow` files from TradingFlow)
 2. **Deploy** a new strategy token with automatic bonding curve pricing
@@ -22,7 +22,7 @@
 
 ### Our Solution
 
-FlowFund turns every trading strategy into a **tokenized asset** with:
+FundFlow turns every trading strategy into a **tokenized asset** with:
 
 - **Transparent on-chain logic** — Strategy hash stored on IPFS
 - **Quadratic bonding curve** — Price = BASE + K × Supply² (early birds win!)
@@ -293,5 +293,5 @@ MIT License — See [LICENSE](./LICENSE) for details.
 ---
 
 <p align="center">
-  <b>FlowFund</b> — Where AI Meets DeFi 🤖💰
+  <b>FundFlow</b> — Where AI Meets DeFi 🤖💰
 </p>

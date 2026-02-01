@@ -39,7 +39,7 @@ export const Upload: React.FC<UploadProps> = ({ onUpload }) => {
         id: hash,
         name: name,
         ticker: ticker.toUpperCase(),
-        description: "AI-powered trading strategy deployed on FlowFund",
+        description: "AI-powered trading strategy deployed on FundFlow",
         creator: address || "Unknown",
         marketCap: 1000,
         price: 0.0001,

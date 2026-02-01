@@ -1,6 +1,6 @@
-# FlowFund Smart Contracts
+# FundFlow Smart Contracts
 
-Solidity smart contracts for the FlowFund platform - a Pump.fun style bonding curve system for AI trading strategies.
+Solidity smart contracts for the FundFlow platform - a Pump.fun style bonding curve system for AI trading strategies.
 
 ## Contracts
 
