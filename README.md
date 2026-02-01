@@ -7,7 +7,7 @@
 
 ## Introduction
 
-**FundFlow** is a decentralized platform that tokenizes AI trading strategies using a **Pump.fun-style bonding curve**. Users can:
+**FundFlow** (Live on fundflow-lime.vercel.app) is a decentralized platform that tokenizes AI trading strategies using a **Pump.fun-style bonding curve**. Users can:
 
 1. **Upload** their AI trading logic (`.tradingflow` files from TradingFlow)
 2. **Deploy** a new strategy token with automatic bonding curve pricing
