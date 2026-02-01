@@ -192,24 +192,6 @@ BSC_TESTNET_RPC=https://data-seed-prebsc-1-s1.binance.org:8545/
 
 ---
 
-## Demo
-
-### Live Demo
-
-🔗 **[https://fundflow-lime.vercel.app](https://fundflow-lime.vercel.app)** — Try it now!
-
-### Demo Video
-
-🎬 **[Coming Soon]** — YouTube/Loom walkthrough
-
-### Screenshots
-
-| Home                            | Launch                       | Trade                        |
-| ------------------------------- | ---------------------------- | ---------------------------- |
-| Landing page with project intro | Upload .tradingflow strategy | Buy tokens, watch price rise |
-
----
-
 ## How It Works
 
 ### 1. Launch a Strategy
@@ -271,12 +253,6 @@ FundFlow/
 
 ---
 
-## Team
-
-Built with 💜 at **ETH Chiang Mai 2026**
-
----
-
 ## License
 
 MIT License — See [LICENSE](./LICENSE) for details.
@@ -285,10 +261,7 @@ MIT License — See [LICENSE](./LICENSE) for details.
 
 ## Acknowledgments
 
-- [Pump.fun](https://pump.fun) — Inspiration for bonding curve mechanics
 - [TradingFlow](https://tradingflow.com) — AI trading strategy platform
-- [Foundry](https://book.getfoundry.sh/) — Blazing fast Solidity toolkit
-- [wagmi](https://wagmi.sh/) — React hooks for Ethereum
 
 ---
 
