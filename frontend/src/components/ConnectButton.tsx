@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
 import { bscTestnet } from 'wagmi/chains';
 import { Zap, LogOut, ChevronDown, X } from 'lucide-react';
-import { SUPPORTED_WALLETS } from '../config/wagmi';
 
 // BSC Testnet network params for adding to wallet
 const BSC_TESTNET_PARAMS = {
@@ -17,26 +16,34 @@ const BSC_TESTNET_PARAMS = {
   blockExplorerUrls: ['https://testnet.bscscan.com'],
 };
 
-// Helper to get wallet provider
-function getWalletProvider(walletId: string) {
-  if (typeof window === 'undefined') return null;
-  
-  if (walletId === 'metaMask') {
-    const ethereum = (window as any).ethereum;
-    if (ethereum?.providers) {
-      return ethereum.providers.find((p: any) => p.isMetaMask);
-    }
-    return ethereum?.isMetaMask ? ethereum : null;
-  }
-  
-  if (walletId === 'okxWallet') {
-    return (window as any).okxwallet || null;
-  }
-  
-  return null;
-}
+// Wallet configurations
+const WALLETS = [
+  {
+    id: 'metamask',
+    name: 'MetaMask',
+    icon: '/metamask.png',
+    getProvider: () => {
+      if (typeof window === 'undefined') return null;
+      const ethereum = (window as any).ethereum;
+      if (ethereum?.providers) {
+        return ethereum.providers.find((p: any) => p.isMetaMask && !p.isOKExWallet);
+      }
+      return ethereum?.isMetaMask ? ethereum : null;
+    },
+  },
+  {
+    id: 'okx',
+    name: 'OKX Wallet',
+    icon: '/okx.png',
+    getProvider: () => {
+      if (typeof window === 'undefined') return null;
+      // OKX injects as window.okxwallet
+      return (window as any).okxwallet || null;
+    },
+  },
+];
 
-// Helper to add/switch network
+// Helper to add/switch network on a specific provider
 async function addAndSwitchNetwork(provider: any) {
   try {
     await provider.request({
@@ -45,71 +52,55 @@ async function addAndSwitchNetwork(provider: any) {
     });
   } catch (switchError: any) {
     if (switchError.code === 4902 || switchError.code === -32603) {
-      try {
-        await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [BSC_TESTNET_PARAMS],
-        });
-      } catch (addError) {
-        console.error('Failed to add network:', addError);
-        throw addError;
-      }
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [BSC_TESTNET_PARAMS],
+      });
     } else {
       throw switchError;
     }
   }
 }
 
+// Direct connect using provider's eth_requestAccounts
+async function connectWithProvider(provider: any): Promise<string[]> {
+  const accounts = await provider.request({
+    method: 'eth_requestAccounts',
+  });
+  return accounts;
+}
+
 export const ConnectButton: React.FC = () => {
   const { address, isConnected, chain } = useAccount();
-  const { connect, connectors, isPending, error, reset } = useConnect();
+  const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
   const [showMenu, setShowMenu] = useState(false);
   const [connectingWallet, setConnectingWallet] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [manualAddress, setManualAddress] = useState<string | null>(null);
 
-  // Reset connecting state when error occurs or connection completes
-  useEffect(() => {
-    if (error) {
-      setConnectingWallet(null);
-      setConnectionError(error.message || 'Connection failed');
-      const timer = setTimeout(() => {
-        reset();
-        setConnectionError(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, reset]);
-
+  // Sync manual connection with wagmi
   useEffect(() => {
     if (isConnected) {
       setConnectingWallet(null);
       setShowMenu(false);
       setConnectionError(null);
+      setManualAddress(null);
     }
   }, [isConnected]);
-
-  useEffect(() => {
-    if (!isPending && connectingWallet) {
-      const timer = setTimeout(() => {
-        if (!isConnected) {
-          setConnectingWallet(null);
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isPending, connectingWallet, isConnected]);
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
   const handleConnect = async (walletId: string) => {
-    const provider = getWalletProvider(walletId);
+    const wallet = WALLETS.find(w => w.id === walletId);
+    if (!wallet) return;
+
+    const provider = wallet.getProvider();
     if (!provider) {
-      const walletName = SUPPORTED_WALLETS.find(w => w.id === walletId)?.name || walletId;
-      alert(`${walletName} is not installed. Please install it first.`);
+      alert(`${wallet.name} is not installed. Please install it first.`);
       return;
     }
 
@@ -118,15 +109,31 @@ export const ConnectButton: React.FC = () => {
     setConnectionError(null);
 
     try {
-      // First, try to add/switch to BSC Testnet on the specific wallet
+      // Step 1: Add/switch network on the specific wallet
       await addAndSwitchNetwork(provider);
 
-      // Find the correct connector for this wallet
-      const connector = connectors.find(c => c.id === walletId);
-      if (connector) {
-        connect({ connector });
-      } else {
-        throw new Error(`Connector for ${walletId} not found`);
+      // Step 2: Request accounts directly from the wallet's provider
+      const accounts = await connectWithProvider(provider);
+      
+      if (accounts && accounts.length > 0) {
+        // Step 3: Now use wagmi to sync state
+        // Temporarily override window.ethereum to point to selected wallet
+        const originalEthereum = (window as any).ethereum;
+        (window as any).ethereum = provider;
+        
+        // Find injected connector and connect
+        const injectedConnector = connectors.find(c => c.id === 'injected' || c.type === 'injected');
+        if (injectedConnector) {
+          connect({ connector: injectedConnector });
+        }
+        
+        // Store address in case wagmi doesn't sync immediately
+        setManualAddress(accounts[0]);
+        
+        // Restore original ethereum (wagmi should have captured the connection)
+        setTimeout(() => {
+          (window as any).ethereum = originalEthereum;
+        }, 1000);
       }
     } catch (err: any) {
       console.error('Connection error:', err);
@@ -138,7 +145,12 @@ export const ConnectButton: React.FC = () => {
   const handleCancel = () => {
     setConnectingWallet(null);
     setConnectionError(null);
-    reset();
+    setManualAddress(null);
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setManualAddress(null);
   };
 
   // Check if on wrong network
@@ -149,16 +161,20 @@ export const ConnectButton: React.FC = () => {
     switchChain({ chainId: bscTestnet.id });
   };
 
-  // Get installed wallets with their status
+  // Get installed wallets
   const getWalletsWithStatus = () => {
-    return SUPPORTED_WALLETS.map(wallet => ({
+    return WALLETS.map(wallet => ({
       ...wallet,
-      installed: wallet.checkInstalled(),
+      installed: wallet.getProvider() !== null,
     }));
   };
 
+  // Display address (from wagmi or manual)
+  const displayAddress = address || manualAddress;
+  const isDisplayConnected = isConnected || !!manualAddress;
+
   // Wrong network warning
-  if (isConnected && isWrongNetwork) {
+  if (isDisplayConnected && isWrongNetwork) {
     return (
       <div className="flex items-center gap-2">
         <button
@@ -168,7 +184,7 @@ export const ConnectButton: React.FC = () => {
           ⚠️ Switch to BSC Testnet
         </button>
         <button
-          onClick={() => disconnect()}
+          onClick={handleDisconnect}
           className="brutal-btn bg-gray-200 hover:bg-gray-300 text-black px-3 py-2.5 font-bold font-mono text-sm uppercase border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
         >
           <LogOut size={16} />
@@ -177,15 +193,15 @@ export const ConnectButton: React.FC = () => {
     );
   }
 
-  if (isConnected && address) {
+  if (isDisplayConnected && displayAddress) {
     return (
       <div className="flex items-center gap-2">
         <div className="brutal-btn bg-white text-black px-4 py-2 font-bold font-mono text-sm border-2 border-black shadow-[3px_3px_0px_#000] flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>{formatAddress(address)}</span>
+          <span>{formatAddress(displayAddress)}</span>
         </div>
         <button
-          onClick={() => disconnect()}
+          onClick={handleDisconnect}
           className="brutal-btn bg-red-500 hover:bg-red-400 text-white px-3 py-2.5 font-bold font-mono text-sm uppercase border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 active:shadow-none transition-all flex items-center gap-1"
         >
           <LogOut size={16} />
@@ -196,12 +212,12 @@ export const ConnectButton: React.FC = () => {
 
   // Show connecting state
   if (connectingWallet) {
-    const wallet = SUPPORTED_WALLETS.find(w => w.id === connectingWallet);
+    const wallet = WALLETS.find(w => w.id === connectingWallet);
     return (
       <div className="flex items-center gap-2">
         <div className="brutal-btn bg-yellow-400 text-black px-4 py-2 font-bold font-mono text-sm border-2 border-black shadow-[3px_3px_0px_#000] flex items-center gap-2 animate-pulse">
           <img src={wallet?.icon} alt={wallet?.name} className="w-5 h-5" />
-          <span>Connecting...</span>
+          <span>Connecting to {wallet?.name}...</span>
         </div>
         <button
           onClick={handleCancel}
