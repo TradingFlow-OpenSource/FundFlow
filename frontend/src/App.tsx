@@ -226,7 +226,7 @@ const AppContent: React.FC = () => {
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-black font-black font-mono text-sm uppercase">
             <div className="flex items-center gap-3 bg-white px-3 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#000]">
               <span className="w-3 h-3 bg-green-500 border-2 border-black animate-pulse"></span>
-              <span>SYSTEM ONLINE // ETH_CHIANGMAI</span>
+              <span>SYSTEM ONLINE // ETH_CHIANGMAI 2026</span>
             </div>
 
             <div className="flex gap-6 text-black/80">
@@ -242,7 +242,7 @@ const AppContent: React.FC = () => {
             </div>
 
             <div className="text-xs font-bold opacity-80">
-              © 2024 FLOWFUND. DEGEN MODE ACTIVE.
+              © 2026 FUNDFLOW. DEGEN MODE ACTIVE.
             </div>
           </div>
         </footer>
@@ -261,7 +261,7 @@ const AppContent: React.FC = () => {
               <span className="hover:text-primary cursor-pointer transition-colors">
                 Terms
               </span>
-              <span>© FLOWFUND</span>
+              <span>© FUNDFLOW</span>
             </div>
           </div>
         </footer>

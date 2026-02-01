@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
 
             <div className="flex flex-col">
               <span className="font-display font-bold text-2xl tracking-tight text-white leading-none group-hover:text-primary transition-colors">
-                FLOW<span className="text-primary">FUND</span>
+                FUND<span className="text-primary">FLOW</span>
               </span>
               <span className="text-[10px] font-mono text-gray-400 tracking-widest group-hover:text-white transition-colors">
                 MCP_LAUNCHPAD
